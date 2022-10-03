@@ -1,110 +1,74 @@
-import 'dart:math';
+import 'package:apitaller/Models/Model_Pokemon.dart';
 import 'package:flutter/material.dart';
-import 'package:card_swiper/card_swiper.dart';
-import '../data.dart';
+import 'package:apitaller/Widgets/listPokemon.dart';
+import 'package:apitaller/Pokemon_Provider/Pokemon_Provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 
 
 class MyHomeApp extends StatefulWidget{
+  final String title;
+  const MyHomeApp({Key? key, required this.title}): super(key: key);
+
   State<StatefulWidget> createState()=>_myHomePage_state();
 }
 class _myHomePage_state extends State<MyHomeApp> {
+
+  late Future<List<ModelPokemon>> ListaPokemon;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final getProvider = PokemonProvider();
+    ListaPokemon = getProvider.getPokemon();
+  }
 
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
     return Scaffold(
       appBar: AppBar(
-        title: Text("API"),
+        title: Text(widget.title),
 
       ),
-      body: Container(
+      body: FutureBuilder(
+        future: ListaPokemon,
+        builder: (context, Snapshot) {
+          if (Snapshot.hasData) {
+            return Column(
+              children: <Widget>[
+                Container(
+                  height: 200,
+                  padding: const EdgeInsets.all(15),
+                  child: PageView(
+                      controller: PageController(
+                          viewportFraction: 0.7,
+                          initialPage: 0
 
-        child: Column(
-          children: [
-            Container(
-                width: double.infinity,
-                height: 300,
-                child: PageView(
+                      ),
 
-                  controller: PageController(
-                      viewportFraction: 0.7,
-                      initialPage: 0
-
+                    children: listPokemon(Snapshot.data as List<ModelPokemon>),
                   ),
-                  children: <Widget>[
-                    Pagina(Colors.green, "verde"),
-                    Pagina(Colors.red, "rojo"),
-                    Pagina(Colors.blue, "azul"),
-                    Pagina(Colors.pink, "rosado"),
-
-
-                  ],
+                ),
+                Container(
+                  height: 300,
+                  padding: const EdgeInsets.all(15),
+                  child: ContentSwiper(Snapshot.data as List<ModelPokemon>),
                 )
-            ),
-            Container(
+              ],
+            );
+          }else{
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+        },
 
-              height: 250,
-              child: Swiper(
-                itemWidth: 300,
-                itemCount: 6,
-                itemBuilder: (BuildContext context, int index) {
-                  return ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Image(
-                        image: AssetImage(images2[index]),
-                        fit: BoxFit.cover,
-                      ));
-                },
-                viewportFraction: 0.8,
-                scale: 0.9,
-                layout: SwiperLayout.STACK,
-
-              ),
-            )
-          ],
-        ),
       ),
     );
   }
-
-
 }
 
-class Pagina extends StatelessWidget{
-  final color;
-  final text;
-   Pagina(this.color, this.text);
 
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-
-      children: [
-        Container(
-          padding: EdgeInsets.only(top:15), //apply padding to all four sides
-          child: Text(
-            this.text,
-            textAlign: TextAlign.center,
-            overflow: TextOverflow.ellipsis,
-
-          ),
-        ),
-
-
-        Container(
-          width: double.infinity,
-          height: 200,
-          margin: EdgeInsets.only(left: 10, top:20),
-          decoration: BoxDecoration(
-              color:this.color,
-              borderRadius: BorderRadius.circular(30)
-
-          ),
-        )
-      ],
-    );
-  }
-
-}
